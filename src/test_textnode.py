@@ -2,6 +2,7 @@ import unittest
 
 from textnode import TextNode, TextType
 from htmlnode import LeafNode
+from inline_text_functions import *
 from main import *
 
 class TestTextNode(unittest.TestCase):
@@ -240,6 +241,7 @@ class TestTextNode(unittest.TestCase):
                 text_node_list  
             
         )
+    
 
 if __name__ == "__main__":
     unittest.main()
