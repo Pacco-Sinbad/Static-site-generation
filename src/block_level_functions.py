@@ -2,16 +2,16 @@ import re
 from block_types import BlockType
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, ParentNode, LeafNode
-
+#HELPER
 def markdown_stripper(md):
     stripped_block = md.strip()
     if stripped_block:
         lines = stripped_block.split('\n')
-        cleaned_lines = [line.strip() for line in lines]
+        cleaned_lines = [line.strip() for line in lines if line]
         normalized_block = "\n".join(cleaned_lines)
         return normalized_block
-    
-def non_empty(md, delimiter):
+# HELPER    
+def non_empty(md, delimiter):   
     lines = md.split("\n")
     non_empty_lines = [line for line in lines if line.strip()]
     return bool(non_empty_lines) and all(line.startswith(delimiter) for line in non_empty_lines)
@@ -26,7 +26,7 @@ def markdown_to_blocks(markdown):
 
 def block_to_block_type(markdown_block):
     md = markdown_stripper(markdown_block)
-    print(repr(md))
+    
     if re.match(r"#{1,6} ", md):
         return BlockType.HEADING
     elif re.match(r"```", md) and re.search(r'```$', md):

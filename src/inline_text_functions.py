@@ -19,6 +19,8 @@ def text_node_to_html_node(text_node):
     else:
         raise Exception("The text does not match any defined text types")
 
+# 1
+
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_node_list = []
     for node in old_nodes:
@@ -37,7 +39,9 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 else:
                     new_node_list.append(TextNode(st, TextType.TEXT))
     return new_node_list
-               
+
+# 2
+
 def extract_markdown_images(text):
     images = re.findall(r"!\[(.*?)\]\((.*?)\)", text)
     return images
@@ -99,6 +103,8 @@ def split_nodes_link(old_nodes):
             if split_up_text != "":
                 new_node_list.append(TextNode(f'{split_up_text}', TextType.TEXT))  
     return new_node_list  
+
+# MAIN INTERFACE
 
 def text_to_textnodes(text):
     nodes = split_nodes_delimiter([TextNode(text,TextType.TEXT)], '**', TextType.BOLD)
