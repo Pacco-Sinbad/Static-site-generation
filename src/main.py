@@ -6,6 +6,19 @@ from block_level_functions import *
 from inline_text_functions import *
 from text_to_html_gen import *
 
+def extract_title(markdown):
+    lines = markdown.split('\n')
+    header = ""
+    for line in lines:
+        if line.startswith('# '):
+            header = line.replace('# ', '').replace('\n', '').strip()
+            break
+        else:
+            raise Exception('No h1 element was found to assign the title from.')
+    
+    return header
+
+
 def copy_recursive(source_dir, dest_dir):
     items = os.listdir(source_dir)
     for item in items:
@@ -19,8 +32,6 @@ def copy_recursive(source_dir, dest_dir):
             print(f"Creating directory: {dest_path}")
             os.mkdir(dest_path)
             copy_recursive(source_path, dest_path)
-
-
 
 def copy_static_files(source_dir, dest_dir):
     if os.path.exists(source_dir):
@@ -67,11 +78,35 @@ def copy_static_files(source_dir, dest_dir):
     # Recursively copy files
     copy_recursive(source_dir, dest_dir)
         
-    
+def generate_page(from_path, template_path, dest_path):
+    if os.path.exists(from_path) and os.path.exists(template_path):
+        print(f'Generating page from {from_path} to {dest_path} using {template_path}')
+    else:
+        raise Exception('File paths could not be found')
+    with open(from_path, 'r') as f:
+        from_contents = f.read()
+    with open(template_path) as f:
+        template_contents = f.read()
+    html_str = one_big_div(from_contents)
+    title = extract_title(from_contents)
+    populated_template = template_contents.replace('{{ Title }}', title).replace('{{ Content }}', html_str)
+    dest_path_only = os.path.dirname(dest_path)
+    os.makedirs(dest_path_only, exist_ok=True)
+    with open(dest_path, 'w') as f:
+        f.write(populated_template)
+
+
+
+        
+        
+
+
 
 
 def main():
     copy_static_files('static', 'public')
+    generate_page('content/index.md', 'template.html', 'public/index.html')
+    
 
 if __name__ == "__main__":
      main()
