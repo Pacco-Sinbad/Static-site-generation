@@ -96,7 +96,31 @@ def generate_page(from_path, template_path, dest_path):
         f.write(populated_template)
 
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    with open(template_path, 'r') as f:
+        template = f.read()
+    dirs = os.listdir(dir_path_content)
+    for dir in dirs:
+        content_path = os.path.join(dir_path_content, dir)
+        dest_path = os.path.join(dest_dir_path, dir)
 
+        if os.path.isfile(content_path):
+            if content_path.endswith('.md'):
+                dest_path = dest_path.replace('.md', '.html')
+                with open(content_path, 'r') as f:
+                    content_path_contents = f.read()
+                html_str = one_big_div(content_path_contents)
+                title = extract_title(content_path_contents)
+                populated_template = template.replace('{{ Title }}', title).replace('{{ Content }}', html_str)
+                dest_dir = os.path.dirname(dest_path)
+                os.makedirs(dest_dir, exist_ok=True)
+                with open(dest_path, 'w') as f:
+                    f.write(populated_template)
+        else:
+            os.makedirs(dest_path, exist_ok=True)
+            generate_pages_recursive(content_path, template_path, dest_path)
+            
+            
         
         
 
@@ -105,7 +129,8 @@ def generate_page(from_path, template_path, dest_path):
 
 def main():
     copy_static_files('static', 'public')
-    generate_page('content/index.md', 'template.html', 'public/index.html')
+    # generate_page('content/index.md', 'template.html', 'public/index.html')
+    generate_pages_recursive('content', 'template.html', 'public')
     
 
 if __name__ == "__main__":

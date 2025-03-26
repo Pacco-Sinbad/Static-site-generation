@@ -61,14 +61,18 @@ def text_to_children(blocks_with_types):
             # blocks_types_textnodes.append((block, block_type, textnodes))
         elif block_type == BlockType.ORDERED_LIST:
             block_list = block.split('\n')
-            clean_blocks = []
-            for i, block in enumerate(block_list):
-                expected_prefix = f'{i+1}. '
-                new_block = block.replace(expected_prefix, '')
-                if new_block:
-                    clean_blocks.append(new_block)
-            textnodes = [TextNode(line,TextType.TEXT) for line in clean_blocks]
-            blocks_types_textnodes.append((block, block_type, textnodes))
+            all_item_nodes = []
+    
+            for i, block_item in enumerate(block_list):
+                if block_item.strip():  # Skip empty lines
+                    expected_prefix = f'{i+1}. '
+                    item_text = block_item.replace(expected_prefix, '', 1)
+                    # Process the item text to handle formatting like bold, italic, code, etc.
+                    item_nodes = text_to_textnodes(item_text)
+                    if item_nodes:  # Only add non-empty items
+                        all_item_nodes.append(item_nodes)
+    
+            blocks_types_textnodes.append((block, block_type, all_item_nodes))
         elif block_type == BlockType.QUOTE:
             textnodes = block_split(block, '> ', block_type)
             blocks_types_textnodes.append((block, block_type, textnodes))
