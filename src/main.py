@@ -1,5 +1,6 @@
 import os
 import shutil
+import sys
 from textnode import TextNode, TextType
 from htmlnode import HTMLNode, ParentNode, LeafNode
 from block_level_functions import *
@@ -33,7 +34,7 @@ def copy_recursive(source_dir, dest_dir):
             os.mkdir(dest_path)
             copy_recursive(source_path, dest_path)
 
-def copy_static_files(source_dir, dest_dir):
+def copy_static_files(source_dir, dest_dir, basepath=None):
     if os.path.exists(source_dir):
         contents = os.listdir(source_dir)
         print(f"Contents of {source_dir}", contents)
@@ -78,7 +79,7 @@ def copy_static_files(source_dir, dest_dir):
     # Recursively copy files
     copy_recursive(source_dir, dest_dir)
         
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     if os.path.exists(from_path) and os.path.exists(template_path):
         print(f'Generating page from {from_path} to {dest_path} using {template_path}')
     else:
@@ -90,13 +91,15 @@ def generate_page(from_path, template_path, dest_path):
     html_str = one_big_div(from_contents)
     title = extract_title(from_contents)
     populated_template = template_contents.replace('{{ Title }}', title).replace('{{ Content }}', html_str)
+    populated_template = populated_template.replace('href="/', f'href="{basepath}')
+    populated_template = populated_template.replace('src="/', f'src="{basepath}')
     dest_path_only = os.path.dirname(dest_path)
     os.makedirs(dest_path_only, exist_ok=True)
     with open(dest_path, 'w') as f:
         f.write(populated_template)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     with open(template_path, 'r') as f:
         template = f.read()
     dirs = os.listdir(dir_path_content)
@@ -112,25 +115,32 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 html_str = one_big_div(content_path_contents)
                 title = extract_title(content_path_contents)
                 populated_template = template.replace('{{ Title }}', title).replace('{{ Content }}', html_str)
+                populated_template = populated_template.replace('href="/', f'href="{basepath}')
+                populated_template = populated_template.replace('src="/', f'src="{basepath}')
                 dest_dir = os.path.dirname(dest_path)
                 os.makedirs(dest_dir, exist_ok=True)
                 with open(dest_path, 'w') as f:
                     f.write(populated_template)
         else:
             os.makedirs(dest_path, exist_ok=True)
-            generate_pages_recursive(content_path, template_path, dest_path)
+            generate_pages_recursive(content_path, template_path, dest_path, basepath)
             
             
-        
+
         
 
 
 
 
 def main():
-    copy_static_files('static', 'public')
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = '/'
+    print(f'Using basepath: {basepath}')
+    copy_static_files('static', 'docs', basepath)
     # generate_page('content/index.md', 'template.html', 'public/index.html')
-    generate_pages_recursive('content', 'template.html', 'public')
+    generate_pages_recursive('content', 'template.html', 'docs', basepath)
     
 
 if __name__ == "__main__":
